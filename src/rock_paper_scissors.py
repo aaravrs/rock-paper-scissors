@@ -8,7 +8,11 @@ winning_conditions = { # Left beats right
     ("P", "R"), # P = Paper
     ("S", "P")  # S = Scissors
 }
-
+move_to_word = {
+    "R": "Rock",
+    "P": "Paper",
+    "S": "Scissors"
+}
 valid_moves = {"R", "P", "S"}
 
 def clear():
@@ -19,7 +23,7 @@ def exit_pretty():
         clear()
         print(f"Exiting game....\n\n{i}")
         time.sleep(1)
-
+    exit()
 
 def print_main_menu():
     print("Rock Paper Scissors")
@@ -35,55 +39,84 @@ def print_game_menu():
     print("2. Player vs Computer")
     print("3. Exit to menu")
 
-def print_pvp_menu():
-    print("Rock Paper Scissors")
-    print("-------------------")
+def print_tutorial_menu():
+    clear()
     print("To play, simply enter your choice")
     print("(R = Rock, P = Paper, S = Scissors")
+    input("\nPress enter to continue:")
+    clear()
+    print("To win, you must be the first player to reach 3 round wins.")
+    input("\nPress enter to continue and begin the game: ")
+    clear()
 
-def game():
+def game_menu():
     clear()
     print_game_menu()
     option = input("> ")
 
     if option == "1":
-        game_pvp(False)
+        game(False)
     elif option == "2":
-        game_pvp(True)
+        game(True)
     elif option == "3":
         return
+    else:
+        game_menu()
 
-def get_valid_move(player):
+def get_valid_move(player, text):
     move = ""
     while move not in valid_moves:
-        print(f"{player}, enter your choice (R, P, S)")
+        clear()
+        print(text)
+        print(f"{player}, enter your move (R, P, S)")
         move = getpass.getpass("> ").upper()
-        if move not in valid_moves: print("Please enter a valid move. \n")
+        if move not in valid_moves:
+            print("\nPlease enter a valid move. \n")
+            time.sleep(1)
     return move
 
-
-def game_pvp(is_computer):
+def game(is_computer):
     clear()
-    print("First, enter your names.")
-    p1 = input("Player 1 Name: ")
+    print(f"First, enter your name{'s' if not is_computer else ''}.\n")
+    p1 = input(f"Player{' 1' if not is_computer else ''} Name: ")
+    p1_wins = 0
     p2 = input("Player 2 Name: ") if not is_computer else "Computer"
+    p2_wins = 0
     clear()
-    print(f"Welcome {p1} and {p2}!")
-    #TODO: use time to make ui better
-    print_pvp_menu()
-    p1_move = get_valid_move(p1)
-    p2_move = get_valid_move(p2) if not is_computer else random.choice(list(valid_moves))
+    print_tutorial_menu()
+    round = 1
+    game_history = []
+    while True: # Each loop is one round
+        round_text = f"""{p1} vs {p2}
+--------------
+Round {round}
+--------------\n"""
+        p1_move = get_valid_move(p1, round_text)
+        p2_move = get_valid_move(p2, round_text) if not is_computer else random.choice(list(valid_moves))
 
-    if (p1_move, p2_move) in winning_conditions:
-        print(f"Player 1 {p1} wins!")
-    elif (p2_move, p1_move) in winning_conditions:
-        print(f"Player 2 {p2} wins!")
-    else:
-        print("This round is a tie!")
+        print(f"{p1} plays {move_to_word[p1_move]}")
+        print(f"{p2} plays {move_to_word[p2_move]}")
+        if (p1_move, p2_move) in winning_conditions:
+            print(f"{p1} wins!")
+            p1_wins += 1
+        elif (p2_move, p1_move) in winning_conditions:
+            print(f"{p2} wins!")
+            p2_wins += 1
+        else:
+            print("This round is a tie!")
+
+        if p1_wins == 3:
+            print(f"{p1} wins the game!")
+            break
+        elif p2_wins == 3:
+            print(f"{p2} wins the game!")
+            break
+
+        round += 1
+        time.sleep(2)
 
 def view_history():
     pass
-
 
 def main():
     while True:
@@ -92,12 +125,13 @@ def main():
         option = input("> ")
 
         if option == "1":
-            game()
+            game_menu()
         elif option == "2":
             view_history()
         elif option == "3":
             exit_pretty()
-        time.sleep(1)
 
+        # save
+        time.sleep(1)
 
 main()
